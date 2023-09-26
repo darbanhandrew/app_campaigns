@@ -1,0 +1,16 @@
+import frappe
+import random
+
+@frappe.whitelist()
+def get_random_profile_ad():
+customer_profile = frappe.get_doc("Customer Profile","13")
+tags = customer_profile.get_tags()
+active_campaigns = frappe.get_all("Targeted Tags", filters=[["tag","in",tags]], fields=["parent"])
+unique_parents = list({campaign["parent"] for campaign in active_campaigns})
+ads = frappe.get_all("App Campaign Ads", filters=[["parent","in",unique_parents]], fields=["title","name","image","weight","action_url"])
+
+# Extract the weights from the objects
+weights = [item["weight"] for item in ads]
+
+# Choose one object randomly based on their weights
+selected_item = random.choices(ads, weights=weights, k=1)[0]
